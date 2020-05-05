@@ -16,8 +16,29 @@ io.on("connection", (socket) => {
   console.log("We have a new connection!");
 
   //receive an event from the client side
-  socket.on("join", ({ name, room }) => {
+  socket.on("join", ({ name, room }, callback) => {
     // console.log("name, room", name, room);
+
+    //addUser() return either an error or a user
+    const { error, user } = addUser({ id: socket.id, name, room });
+    if (error) return callback(error);
+
+    //system messages when user joins or leaves a room
+    //emit a new event
+    socket.emit("message", {
+      user: "admin",
+      text: `${user.name}, welcome to the ${user.room} chatroom`,
+    });
+
+    //send message to all users beside that specific user
+    socket.broadcast
+      .to(user.room)
+      .emit("message", { user: "admin", text: `${user.name} has joined!` });
+
+    //join a user to a room
+    socket.join(user, room);
+
+    callback();
   });
 
   socket.on("disconnect", () => {

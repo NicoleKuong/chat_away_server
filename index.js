@@ -1,19 +1,22 @@
 const express = require("express");
 const http = require("http");
-const socketIo = require("socket.io");
-const router = require("./router");
+const socketio = require("socket.io");
+const cors = require("cors");
 
 const { addUser, removeUser, getUser, getUsersInRoom } = require("./users");
-const PORT = process.env.PORT || 4000;
+
+const router = require("./router");
 
 const app = express();
 const server = http.createServer(app);
-const io = socketIo(server);
+const io = socketio(server);
 
+app.use(cors());
+app.use(router);
 //run when there is a client connection
 //socket is going to be connected with the client side
 io.on("connection", (socket) => {
-  console.log("We have a new connection!");
+  // console.log("We have a new connection!");
 
   //receive an event from the client side
   socket.on("join", ({ name, room }, callback) => {
@@ -21,22 +24,23 @@ io.on("connection", (socket) => {
 
     //addUser() return either an error or a user
     const { error, user } = addUser({ id: socket.id, name, room });
+
     if (error) return callback(error);
+
+    //join a user to a room
+    socket.join(user.room);
 
     //system messages when user joins or leaves a room
     //emit a new event from the backend to the frontend
     socket.emit("message", {
       user: "admin",
-      text: `${user.name}, welcome to the ${user.room} chatroom`,
+      text: `${user.name}, welcome to the ${user.room} chatroom.`,
     });
 
     //send message to all users beside that specific user
     socket.broadcast
       .to(user.room)
       .emit("message", { user: "admin", text: `${user.name} has joined!` });
-
-    //join a user to a room
-    socket.join(user, room);
 
     callback();
   });
@@ -48,7 +52,7 @@ io.on("connection", (socket) => {
     //socket is from above io.on function parameter
     const user = getUser(socket.id);
 
-    //specify the room name
+    //specify the room name and send the message to the whole room
     io.to(user.room).emit("message", { user: user.name, text: message });
 
     callback();
@@ -59,6 +63,6 @@ io.on("connection", (socket) => {
   });
 });
 
-app.use(router);
+const PORT = process.env.PORT || 4000;
 
 server.listen(PORT, () => console.log(`Server has started on port ${PORT}`));

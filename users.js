@@ -11,9 +11,7 @@ const addUser = ({ id, name, room }) => {
     (user) => user.room === room && user.name === name
   );
 
-  if (existingUser) {
-    return { error: "Username is taken" };
-  }
+  if (existingUser) return { error: "Username is taken." };
 
   //if no existing user, then create a new user
   const user = { id, name, room };
@@ -32,22 +30,13 @@ const removerUser = (id) => {
   });
 
   // if there is a matched index, use splice to remove the user and [0] is to return it that removed user
-  if (index !== -1) {
-    return users.splice(index, 1)[0];
-  }
+  if (index !== -1) return users.splice(index, 1)[0];
 };
 
 //get user
-const getUser = (id) =>
-  users.find((user) => {
-    user.id === id;
-  });
+const getUser = (id) => users.find((user) => user.id === id);
 
 //get users in room
-const getUsersInRoom = (room) => {
-  users.filter((user) => {
-    user.room === room;
-  });
-};
+const getUsersInRoom = (room) => users.filter((user) => user.room === room);
 
 module.exports = { addUser, removerUser, getUser, getUsersInRoom };

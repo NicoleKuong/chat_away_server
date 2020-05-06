@@ -42,6 +42,11 @@ io.on("connection", (socket) => {
       .to(user.room)
       .emit("message", { user: "admin", text: `${user.name} has joined!` });
 
+    //see what users inside of the room
+    io.to(user.room).emit("roomData", {
+      room: user.room,
+      users: getUsersInRoom(user.room),
+    });
     callback();
   });
 
@@ -54,12 +59,22 @@ io.on("connection", (socket) => {
 
     //specify the room name and send the message to the whole room
     io.to(user.room).emit("message", { user: user.name, text: message });
+    //when user leaves, send a new state to roomData
+    io.to(user.room).emit("roomData", {
+      room: user.room,
+      users: getUsersInRoom(user.room),
+    });
 
     callback();
   });
 
+  //when user left the room
   socket.on("disconnect", () => {
-    console.log("User had left!");
+    const user = removeUser(socket.id);
+    if (user) {
+      io.to(user.room).emit("message"),
+        { user: "admin", text: `${user.name} has left.` };
+    }
   });
 });
 

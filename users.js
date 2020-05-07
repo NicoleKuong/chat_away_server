@@ -22,7 +22,7 @@ const addUser = ({ id, name, room }) => {
 };
 
 //remover user
-const removerUser = (id) => {
+const removeUser = (id) => {
   //find user with that specific id
 
   const index = users.findIndex((user) => {
@@ -39,4 +39,4 @@ const getUser = (id) => users.find((user) => user.id === id);
 //get users in room
 const getUsersInRoom = (room) => users.filter((user) => user.room === room);
 
-module.exports = { addUser, removerUser, getUser, getUsersInRoom };
+module.exports = { addUser, removeUser, getUser, getUsersInRoom };
